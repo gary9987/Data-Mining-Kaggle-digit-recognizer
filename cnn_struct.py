@@ -1,4 +1,3 @@
-# %% [code]
 import numpy as np
 import pandas as pd
 
@@ -6,9 +5,9 @@ import seaborn
 import matplotlib.pyplot as plt
 
 from keras.models import Sequential
-from keras.layers import Input, Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.layers import Input, Dense, Dropout, Flatten, Conv2D, MaxPooling2D, BatchNormalization
 from keras.utils  import np_utils
-from keras.layers.normalization import BatchNormalization
+#from keras.layers.normalization import BatchNormalization
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 import csv
 
@@ -50,18 +49,25 @@ tensor_out = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(tensor_ou
 tensor_out = MaxPooling2D((2,2), padding='same')(tensor_out)
 tensor_out = Conv2D(filters=128, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
 tensor_out = Conv2D(filters=128, kernel_size=(3, 3), activation='relu')(tensor_out)
-tensor_out = BatchNormalization(axis=1)(tensor_out)
+tensor_out = Dropout(0.5)(tensor_out)
 tensor_out = MaxPooling2D((2,2), padding='same')(tensor_out)
+
 tensor_out = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
 tensor_out = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
 tensor_out = MaxPooling2D((2,2), padding='same')(tensor_out)
+
 tensor_out = Conv2D(filters=512, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
-tensor_out = BatchNormalization(axis=1)(tensor_out)
+tensor_out = Conv2D(filters=512, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
+tensor_out = Dropout(0.5)(tensor_out)
+tensor_out = MaxPooling2D((2,2), padding='same')(tensor_out)
+
+tensor_out = Conv2D(filters=1024, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
+tensor_out = Conv2D(filters=1024, kernel_size=(3, 3), padding='same', activation='relu')(tensor_out)
+tensor_out = Dropout(0.5)(tensor_out)
 tensor_out = MaxPooling2D((2,2), padding='same')(tensor_out)
 
 tensor_out = Flatten()(tensor_out)
 tensor_out = Dropout(0.5)(tensor_out)
-
 tensor_out = Dense(10, name='digit', activation='softmax')(tensor_out)
 
 from keras.models import Model
@@ -96,13 +102,3 @@ results = pd.Series(y_pred_final,name="Label")
 submission = pd.concat([pd.Series(range(1,28001),name = "ImageId"),results],axis = 1)
 
 submission.to_csv('submission.csv', index = False)
-'''
-from IPython.display import HTML
-def create_download_link(title = "Download CSV file", filename = "data.csv"):  
-    html = '<a href={filename}>{title}</a>'
-    html = html.format(title=title,filename=filename)
-    return HTML(html)
-
-# create a link to download the dataframe which was saved with .to_csv method
-create_download_link(filename='submission.csv')
-'''
